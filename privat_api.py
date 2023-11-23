@@ -21,7 +21,7 @@ async def request(url: str):
 
 
 
-async def get_exchange(nums_of_days: int):
+async def get_exchange(nums_of_days: int, exch: str=None):
     nums_of_days = int(nums_of_days)
     exchange_rates = []
     
@@ -37,18 +37,13 @@ async def get_exchange(nums_of_days: int):
         if result:
             rates = result.get("exchangeRate")
             currency_data = {}
-            exc_USD, = list(filter(lambda element: element["currency"] == 'USD', rates))
-            exc_EUR, = list(filter(lambda element: element["currency"] == 'EUR', rates))
-            currency_data = {
-                        'EUR': {
-                            "sale": round(exc_EUR["saleRateNB"], 1),
-                            "purchase": round(exc_EUR["purchaseRateNB"], 1)
-                        },
-                        'USD': {
-                            "sale": round(exc_USD["saleRateNB"], 1),
-                            "purchase": round(exc_USD["purchaseRateNB"], 1)
-                        }
-                    }
+            for exch in ['EUR', 'USD']:
+                exc, = list(filter(lambda element: element["currency"] == exch, rates))
+                
+                currency_data.update([(exch, {
+                    "sale": round(exc["saleRateNB"], 1), 
+                    "purchase": round(exc["purchaseRateNB"], 1)
+                })])
             exchange_rates.append({shift: currency_data})
             
             
@@ -61,7 +56,10 @@ async def main():
         return
     results = []
     
+    print(sys.argv)
+    
     rates = await get_exchange(sys.argv[1])
+    #rates_exch = await get_exchange(sys.argv[1], sys.argv[2])
     results.extend(rates)
         
     print(results)
